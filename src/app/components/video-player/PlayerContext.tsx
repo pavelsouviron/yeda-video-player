@@ -15,7 +15,8 @@ const playerContextDefaults = {
     screenSizeProps: {
         isFullScreen: false,
         setIsFullScreen: () => {}
-    }
+    },
+    handleScreenToggle: () => {},
 };
 
 export const PlayerContext = createContext<PlayerControllerProps>(playerContextDefaults);

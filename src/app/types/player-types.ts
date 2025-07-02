@@ -28,21 +28,24 @@ export interface VideoPlaylistProps {
     chapters: VideoChapterProps[];
 }
 
-export interface PlayerControllerProps {
-    videoRef: React.RefObject<HTMLVideoElement | null>;
-    hlsRef: React.RefObject<Hls | null>;
-    currentTime: number;
-    setCurrentTime: (time: number) => void;
-    videoLength: number;
-    chapters: ChapterProps[];
-    resOptions: {label: string; index: number}[];
-    screenSizeProps: ScreenSizeProps;
-}
-
 export interface ChapterProps {
     title: string;
     start: number;
     end: number;
+}
+
+export interface VideoKeyControlProps {
+    videoRef: React.RefObject<HTMLVideoElement | null>;
+    event: KeyboardEvent;
+    videoElm: HTMLVideoElement;
+    handleScreenToggle: (props: ScreenToggleProps) => void;
+    isFullScreen: boolean,
+    setIsFullScreen: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export interface TimeUpdateProps {
+    videoRef: React.RefObject<HTMLVideoElement | null>;
+    setCurrentTime: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export interface TimelineChapterProps {
@@ -65,4 +68,22 @@ export interface ScrubberProps {
     currentTime: number;
     videoLength: number;
     scrubberGrabHandler: (e: React.MouseEvent<HTMLDivElement>) => void;
+}
+
+export interface ScreenToggleProps {
+    videoRef: React.RefObject<HTMLVideoElement | null>;
+    isFullScreen: boolean;
+    setIsFullScreen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export interface PlayerControllerProps {
+    videoRef: React.RefObject<HTMLVideoElement | null>;
+    hlsRef: React.RefObject<Hls | null>;
+    currentTime: number;
+    setCurrentTime: (time: number) => void;
+    videoLength: number;
+    chapters: ChapterProps[];
+    resOptions: { label: string; index: number }[];
+    screenSizeProps: ScreenSizeProps;
+    handleScreenToggle: (props: ScreenToggleProps) => void;
 }

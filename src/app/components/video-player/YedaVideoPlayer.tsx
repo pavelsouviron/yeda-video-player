@@ -5,6 +5,7 @@ import Hls from 'hls.js';
 import {VideoPlaylistProps} from '@/app/types/player-types';
 import {PlayerContext} from '@/app/components/video-player/PlayerContext';
 import PlayerController from '@/app/components/video-player/PlayerController';
+import {handleScreenToggle, handleTimeUpdate, handleVideoKeyControls} from "@/app/utils/player-utils";
 
 const YedaVideoPlayer: React.FC<VideoPlaylistProps> = ({hlsPlaylistUrl, videoLength, chapters}) => {
     const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -12,44 +13,14 @@ const YedaVideoPlayer: React.FC<VideoPlaylistProps> = ({hlsPlaylistUrl, videoLen
 
     const [isFocused, setIsFocused] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
-    const [resOptions, setResOptions] = useState<{label: string; index: number}[]>([]);
+    const [resOptions, setResOptions] = useState<{ label: string; index: number }[]>([]);
     const [isFullScreen, setIsFullScreen] = useState(false);
-
-    const contextValue = {videoRef, hlsRef, currentTime, setCurrentTime, videoLength, chapters, resOptions, screenSizeProps: {isFullScreen, setIsFullScreen}};
-
-    const handleTimeUpdate = () => {
-        if (!videoRef.current) return;
-        setCurrentTime(videoRef.current.currentTime);
-    };
-
-    const handleVideoKeyControls = (e: KeyboardEvent, video: HTMLVideoElement) => {
-        switch (e.key) {
-            case ' ':
-                e.preventDefault();
-                if (video.paused) {
-                    video.play();
-                    break;
-                }
-                video.pause();
-                break;
-            case 'ArrowRight':
-                video.currentTime = Math.min(video.currentTime + 10, video.duration);
-                break;
-            case 'ArrowLeft':
-                video.currentTime = Math.max(video.currentTime - 10, 0);
-                break;
-            case 'm':
-            case 'M':
-                video.muted = !video.muted;
-                break;
-        }
-    };
 
     /** Keyboard controls hook */
     useEffect(() => {
         if (!isFocused || !videoRef.current) return;
 
-        const handler = (e: KeyboardEvent) => handleVideoKeyControls(e, videoRef.current!);
+        const handler = (event: KeyboardEvent) => handleVideoKeyControls({videoRef, event, videoElm: videoRef.current!, handleScreenToggle, isFullScreen, setIsFullScreen});
 
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
@@ -82,24 +53,26 @@ const YedaVideoPlayer: React.FC<VideoPlaylistProps> = ({hlsPlaylistUrl, videoLen
         videoRef.current?.parentElement?.focus();
     }, []);
 
+    const contextValue = {videoRef, hlsRef, currentTime, setCurrentTime, videoLength, chapters, resOptions, screenSizeProps: {isFullScreen, setIsFullScreen}, handleScreenToggle};
+    const containerProps = {
+        className: `yeda-video-player relative w-full mx-auto ${!isFullScreen ? 'max-w-4xl' : 'full-screen'}`,
+        tabIndex: 0,
+        onFocus: () => setIsFocused(true),
+        onBlur: () => setIsFocused(false)
+    };
+    const videoProps = {
+        className: 'h-full w-full rounded-lg shadow',
+        ref: videoRef,
+        onTimeUpdate: () => handleTimeUpdate({videoRef, setCurrentTime}),
+        onContextMenu: (e: React.MouseEvent<HTMLVideoElement, MouseEvent>) => e.preventDefault()
+    };
+    const controllerProps = {videoRef, hlsRef, chapters, currentTime, setCurrentTime, resOptions, videoLength, screenSizeProps: {isFullScreen, setIsFullScreen}, handleScreenToggle};
+
     return (
         <PlayerContext.Provider value={contextValue}>
-            <div className={`yeda-video-player relative w-full mx-auto ${!isFullScreen ? 'max-w-4xl' : 'full-screen'}`}
-                 tabIndex={0}
-                 onFocus={() => setIsFocused(true)}
-                 onBlur={() => setIsFocused(false)}>
-                <video className="h-full w-full rounded-lg shadow"
-                       ref={videoRef}
-                       onTimeUpdate={handleTimeUpdate}
-                       onContextMenu={(e) => e.preventDefault()}/>
-                <PlayerController videoRef={videoRef}
-                                  hlsRef={hlsRef}
-                                  chapters={chapters}
-                                  currentTime={currentTime}
-                                  setCurrentTime={setCurrentTime}
-                                  resOptions={resOptions}
-                                  videoLength={videoLength}
-                                  screenSizeProps={{isFullScreen, setIsFullScreen}}/>
+            <div {...containerProps}>
+                <video {...videoProps}/>
+                <PlayerController {...controllerProps}/>
             </div>
         </PlayerContext.Provider>
     );
