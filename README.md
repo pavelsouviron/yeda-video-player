@@ -17,3 +17,4 @@ npm run dev
 ### M - Mute/Unmute
 ### F - Toggle fullScreen
 ### <> - Playback speed control
+### Ctrl+LMB - Play clicked chapter from it's start
