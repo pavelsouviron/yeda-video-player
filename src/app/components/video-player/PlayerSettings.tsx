@@ -6,7 +6,7 @@ const PlayerSettings = () => {
     const v = videoRef?.current;
     if (!v) return null;
     return (
-        <button className={'hand'} onClick={() => v.muted = !v.muted}>
+        <button className={'hand'}>
             <img alt="Settings" src={SettingsIcon.src}/>
         </button>
     );
